@@ -1,0 +1,60 @@
+```toml
+name = "personal-morning-digest"
+main = "worker/index.js"
+compatibility_date = "2024-01-01"
+
+# Account configuration
+account_id = ""
+workers_dev = true
+
+# KV Namespace Bindings
+kv_namespaces = [
+  { binding = "ARTICLES_CACHE", id = "", preview_id = "" },
+  { binding = "USER_PREFERENCES", id = "", preview_id = "" },
+  { binding = "READING_HISTORY", id = "", preview_id = "" }
+]
+
+# Cron Triggers - 6:00 AM Israel Time (UTC+2/+3 depending on DST)
+# Using 4:00 AM UTC to approximate Israel Standard Time
+[triggers]
+crons = ["0 4 * * *"]
+
+# Routes for production
+routes = [
+  { pattern = "morning-digest.example.com/*", zone_name = "example.com" }
+]
+
+# Environment variables
+[vars]
+ENVIRONMENT = "production"
+
+# Limits and configuration
+[limits]
+cpu_ms = 50000
+
+# Build configuration
+[build]
+command = ""
+watch_dirs = ["worker"]
+
+# Development configuration
+[env.development]
+name = "personal-morning-digest-dev"
+workers_dev = true
+
+[env.development.vars]
+ENVIRONMENT = "development"
+
+# Staging environment
+[env.staging]
+name = "personal-morning-digest-staging"
+routes = [
+  { pattern = "staging-morning-digest.example.com/*", zone_name = "example.com" }
+]
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+
+[[env.staging.triggers]]
+crons = ["0 4 * * *"]
+```

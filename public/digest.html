@@ -1,0 +1,526 @@
+```html
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>התקציר היומי שלך</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header .date {
+            color: #718096;
+            font-size: 1.1em;
+        }
+
+        .loading {
+            background: white;
+            border-radius: 12px;
+            padding: 60px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading-spinner {
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fed7d7;
+            border: 2px solid #fc8181;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            color: #c53030;
+        }
+
+        .error h2 {
+            margin-bottom: 10px;
+        }
+
+        .articles-container {
+            display: grid;
+            gap: 20px;
+        }
+
+        .article-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .article-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .article-card.read {
+            opacity: 0.7;
+            background: #f7fafc;
+        }
+
+        .article-score {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .article-category {
+            display: inline-block;
+            background: #edf2f7;
+            color: #4a5568;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .article-title {
+            color: #2d3748;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .article-description {
+            color: #4a5568;
+            font-size: 1.05em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .article-meta {
+            display: flex;
+            gap: 15px;
+            color: #718096;
+            font-size: 0.9em;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        .article-time::before {
+            content: '🕐 ';
+        }
+
+        .article-source::before {
+            content: '📰 ';
+        }
+
+        .read-indicator {
+            display: inline-block;
+            background: #48bb78;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-right: 10px;
+        }
+
+        .footer {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer p {
+            color: #718096;
+            margin-bottom: 15px;
+        }
+
+        .footer a {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .footer a:hover {
+            transform: scale(1.05);
+        }
+
+        .stats {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .stat-item {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .article-card {
+                padding: 20px;
+            }
+
+            .article-title {
+                font-size: 1.2em;
+            }
+
+            .article-score {
+                font-size: 0.75em;
+                padding: 4px 10px;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📰 התקציר היומי שלך</h1>
+            <div class="date" id="currentDate"></div>
+        </div>
+
+        <div id="statsContainer"></div>
+        <div id="loadingContainer" class="loading">
+            <div class="loading-spinner"></div>
+            <p>טוען את התקציר האישי שלך...</p>
+        </div>
+
+        <div id="errorContainer"></div>
+        <div id="articlesContainer" class="articles-container"></div>
+
+        <div id="footerContainer"></div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const digestId = urlParams.get('id');
+        const userId = urlParams.get('user');
+
+        let readArticles = new Set();
+
+        try {
+            const stored = localStorage.getItem('readArticles');
+            if (stored) {
+                readArticles = new Set(JSON.parse(stored));
+            }
+        } catch (e) {
+            console.error('Failed to load read articles from localStorage', e);
+        }
+
+        function formatDate() {
+            const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+            const months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+            
+            const now = new Date();
+            const dayName = days[now.getDay()];
+            const day = now.getDate();
+            const month = months[now.getMonth()];
+            const year = now.getFullYear();
+            
+            return `יום ${dayName}, ${day} ב${month} ${year}`;
+        }
+
+        function formatTime(dateString) {
+            try {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                const diffMinutes = Math.floor(diffMs / (1000 * 60));
+
+                if (diffMinutes < 60) {
+                    return `לפני ${diffMinutes} דקות`;
+                } else if (diffHours < 24) {
+                    return `לפני ${diffHours} שעות`;
+                } else {
+                    const diffDays = Math.floor(diffHours / 24);
+                    return `לפני ${diffDays} ימים`;
+                }
+            } catch (e) {
+                return 'זה עתה';
+            }
+        }
+
+        function getCategoryEmoji(category) {
+            const emojiMap = {
+                'חדשות': '📰',
+                'כלכלה': '💰',
+                'ספורט': '⚽',
+                'טכנולוגיה': '💻',
+                'תרבות': '🎭',
+                'בריאות': '🏥',
+                'מדע': '🔬',
+                'בידור': '🎬'
+            };
+            return emojiMap[category] || '📄';
+        }
+
+        async function trackClick(articleId) {
+            if (!userId || !digestId) return;
+
+            readArticles.add(articleId);
+            try {
+                localStorage.setItem('readArticles', JSON.stringify([...readArticles]));
+            } catch (e) {
+                console.error('Failed to save to localStorage', e);
+            }
+
+            try {
+                await fetch(`/api/track`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        articleId: articleId,
+                        digestId: digestId,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+            } catch (e) {
+                console.error('Failed to track click', e);
+            }
+        }
+
+        function handleArticleClick(article) {
+            trackClick(article.id);
+            
+            const card = document.querySelector(`[data-article-id="${article.id}"]`);
+            if (card) {
+                card.classList.add('read');
+                const title = card.querySelector('.article-title');
+                if (title && !title.querySelector('.read-indicator')) {
+                    const indicator = document.createElement('span');
+                    indicator.className = 'read-indicator';
+                    indicator.textContent = 'נקרא';
+                    title.insertBefore(indicator, title.firstChild);
+                }
+            }
+
+            window.open(article.link, '_blank', 'noopener,noreferrer');
+        }
+
+        function renderStats(digest) {
+            const statsContainer = document.getElementById('statsContainer');
+            const totalArticles = digest.articles.length;
+            const readCount = digest.articles.filter(a => readArticles.has(a.id)).length;
+            const avgScore = digest.articles.reduce((sum, a) => sum + (a.score || 0), 0) / totalArticles;
+
+            statsContainer.innerHTML = `
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="stat-value">${totalArticles}</span>
+                        <div class="stat-label">כתבות מותאמות</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${readCount}</span>
+                        <div class="stat-label">נקראו</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${Math.round(avgScore * 100)}%</span>
+                        <div class="stat-label">התאמה ממוצעת</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderArticles(digest) {
+            const articlesContainer = document.getElementById('articlesContainer');
+            
+            if (!digest.articles || digest.articles.length === 0) {
+                articlesContainer.innerHTML = `
+                    <div class="error">
+                        <h2>אין כתבות להצגה</h2>
+                        <p>נסה שוב מאוחר יותר</p>
+                    </div>
+                `;
+                return;
+            }
+
+            articlesContainer.innerHTML = digest.articles.map(article => {
+                const isRead = readArticles.has(article.id);
+                const readClass = isRead ? 'read' : '';
+                const readIndicator = isRead ? '<span class="read-indicator">נקרא</span>' : '';
+                const scorePercent = Math.round((article.score || 0) * 100);
+                const categoryEmoji = getCategoryEmoji(article.category);
+
+                return `
+                    <div class="article-card ${readClass}" data-article-id="${article.id}">
+                        <div class="article-score">${scorePercent}%</div>
+                        <div class="article-category">${categoryEmoji} ${article.category || 'חדשות'}</div>
+                        <h2 class="article-title">
+                            ${readIndicator}
+                            ${article.title}
+                        </h2>
+                        <p class="article-description">${article.description || ''}</p>
+                        <div class="article-meta">
+                            <span class="article-time">${formatTime(article.pubDate)}</span>
+                            <span class="article-source">ynet</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            digest.articles.forEach(article => {
+                const card = document.querySelector(`[data-article-id="${article.id}"]`);
+                if (card) {
+                    card.addEventListener('click', () => handleArticleClick(article));
+                }
+            });
+        }
+
+        function renderFooter() {
+            const footerContainer = document.getElementById('footerContainer');
+            footerContainer.innerHTML = `
+                <div class="footer">
+                    <p>התקציר שלך מותאם במיוחד עבורך על סמך הרגלי הקריאה שלך</p>
+                    <p>ככל שתקרא יותר כתבות, התקציר יהיה מדויק ומותאם יותר</p>
+                    <a href="/">חזרה לדף הבית</a>
+                </div>
+            `;
+        }
+
+        async function loadDigest() {
+            document.getElementById('currentDate').textContent = formatDate();
+
+            if (!digestId) {
+                document.getElementById('loadingContainer').style.display = 'none';
+                document.getElementById('errorContainer').innerHTML = `
+                    <div class="error">
+                        <h2>⚠️ קישור לא תקין</h2>
+                        <p>לא נמצא מזהה תקציר בכתובת</p>
+                        <p><a href="/" style="color: #667eea; font-weight: bold;">חזרה לדף הבית</a></p>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const url = userId 
+                    ? `/api/digest/${digestId}?user=${encodeURIComponent(userId)}`
+                    : `/api/digest/${digestId}`;
+
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const digest = await response.json();
+
+                document.getElementById('loadingContainer').style.display = 'none';
+                
+                renderStats(digest);
+                renderArticles(digest);
+                renderFooter();
+
+            } catch (error) {
+                console.error('Failed to load digest:', error);
+                document.getElementById('loadingContainer').style.display = 'none';
+                document.getElementById('errorContainer').innerHTML = `
+                    <div class="error">
+                        <h2>⚠️ שגיאה בטעינת התקציר</h2>
+                        <p>${error.message}</p>
+                        <p>נסה לרענן את הדף או לחזור מאוחר יותר</p>
+                        <p><a href="/" style="color: #667eea; font-weight: bold;">חזרה לדף הבית</a></p>
+                    </div>
+                `;
+            }
+        }
+
+        loadDigest();
+    </script>
+</body>
+</html>
+```

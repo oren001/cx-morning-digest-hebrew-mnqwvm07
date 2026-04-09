@@ -1,0 +1,30 @@
+# Example development environment variables for Cloudflare Workers
+# Copy this file to .dev.vars and fill in your actual values
+
+# Secret key for generating secure digest links
+# Generate with: openssl rand -hex 32
+DIGEST_SECRET=your_secret_key_here_minimum_32_characters_for_security
+
+# Salt for hashing user identifiers (email addresses)
+# Generate with: openssl rand -hex 16
+USER_ID_SALT=your_salt_here_minimum_16_chars
+
+# KV Namespace IDs (get these after creating namespaces with wrangler)
+# Create with: wrangler kv:namespace create ARTICLES
+# Create with: wrangler kv:namespace create USERS
+# Create with: wrangler kv:namespace create READING_HISTORY
+KV_ARTICLES_ID=your_articles_namespace_id
+KV_USERS_ID=your_users_namespace_id
+KV_READING_HISTORY_ID=your_reading_history_namespace_id
+
+# Optional: Rate limiting for Ynet scraping (requests per minute)
+SCRAPER_RATE_LIMIT=10
+
+# Optional: Number of articles to scrape per cron run
+MAX_ARTICLES_PER_SCRAPE=50
+
+# Optional: Number of top articles to include in digest
+DIGEST_ARTICLE_COUNT=10
+
+# Optional: Digest link expiration in hours (default: 48)
+DIGEST_EXPIRY_HOURS=48

@@ -1,0 +1,38 @@
+```json
+{
+  "name": "personal-morning-digest",
+  "version": "1.0.0",
+  "description": "Personal morning digest that scrapes Ynet news and delivers personalized summaries",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "kv:namespace:create": "wrangler kv:namespace create DIGEST_KV",
+    "kv:namespace:create:preview": "wrangler kv:namespace create DIGEST_KV --preview",
+    "kv:list": "wrangler kv:key list --namespace-id=$KV_NAMESPACE_ID",
+    "pages:dev": "wrangler pages dev public",
+    "pages:deploy": "wrangler pages deploy public"
+  },
+  "dependencies": {
+    "wrangler": "^3.78.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "cloudflare-workers",
+    "cloudflare-pages",
+    "ynet",
+    "news-digest",
+    "hebrew",
+    "personalization",
+    "rss",
+    "scraper"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+```
